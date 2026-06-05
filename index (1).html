@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural City × Air Quality Intelligence Layer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090f;
+  --surface:#0e1220;
+  --card:#141929;
+  --card2:#1a2135;
+  --border:#ffffff12;
+  --border2:#ffffff1e;
+  --text:#e8edf8;
+  --muted:#6b7a99;
+  --accent:#00d4a8;
+  --accent2:#3b82f6;
+  --good:#22c55e;
+  --satisfactory:#84cc16;
+  --moderate:#f59e0b;
+  --poor:#ef4444;
+  --severe:#a855f7;
+  --font-head:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+
+/* ─── GRID BG ─── */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* ─── HEADER ─── */
+header{position:relative;z-index:10;padding:2.5rem 2rem 2rem;border-bottom:1px solid var(--border2);background:linear-gradient(180deg,#0e152680 0%,transparent 100%)}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-box{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:16px;color:#fff;flex-shrink:0}
+.brand{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--text)}
+.brand span{color:var(--accent)}
+.header-meta{text-align:right}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:#ffffff0a;border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.header-title{font-family:var(--font-head);font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-top:.75rem;max-width:540px}
+.header-title em{font-style:normal;color:var(--accent)}
+.header-sub{color:var(--muted);font-size:13px;margin-top:.5rem;max-width:460px;line-height:1.7}
+.source-pill{display:inline-block;margin-top:.75rem;padding:4px 12px;background:#ffffff08;border:1px solid var(--border);border-radius:20px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.source-pill a{color:var(--accent);text-decoration:none}
+
+/* ─── MAIN WRAP ─── */
+main{position:relative;z-index:5;max-width:1100px;margin:0 auto;padding:2rem}
+
+/* ─── STAT CARDS ─── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;position:relative;overflow:hidden;animation:fadeUp .5s ease both}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat-card.c-teal::after{background:linear-gradient(90deg,var(--accent),transparent)}
+.stat-card.c-blue::after{background:linear-gradient(90deg,var(--accent2),transparent)}
+.stat-card.c-amber::after{background:linear-gradient(90deg,var(--moderate),transparent)}
+.stat-card.c-red::after{background:linear-gradient(90deg,var(--poor),transparent)}
+.stat-label{font-size:11px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.stat-val{font-family:var(--font-head);font-size:2rem;font-weight:800;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:.25rem}
+
+/* ─── CONTROLS ─── */
+.controls{display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:8px 12px 8px 36px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:'⌕';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px}
+.ctrl-btn{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:8px 14px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ctrl-btn.active,.ctrl-btn:hover{background:var(--card2);border-color:var(--accent);color:var(--accent)}
+.ctrl-label{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+/* ─── TABLE ─── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:2rem}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--card2);border-bottom:1px solid var(--border2)}
+th{padding:11px 14px;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+th:hover{color:var(--text)}
+th.sorted{color:var(--accent)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr{animation:fadeIn .3s ease both;transition:background .15s}
+tr:hover td{background:#ffffff04}
+.city-name{font-weight:500;color:var(--text);font-size:13px}
+.city-state{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:1px}
+.rank-num{font-family:var(--font-head);font-size:18px;font-weight:700;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:#ffffff08}
+.aqi-val{font-family:var(--font-mono);font-size:15px;font-weight:500}
+.aqi-bar-wrap{width:90px;height:6px;background:#ffffff10;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+.aqi-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.badge{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500}
+.badge-good{background:#22c55e1a;color:#22c55e;border:1px solid #22c55e30}
+.badge-sat{background:#84cc161a;color:#84cc16;border:1px solid #84cc1630}
+.badge-mod{background:#f59e0b1a;color:#f59e0b;border:1px solid #f59e0b30}
+.badge-poor{background:#ef44441a;color:#ef4444;border:1px solid #ef444430}
+.badge-severe{background:#a855f71a;color:#a855f7;border:1px solid #a855f730}
+.shift{font-family:var(--font-mono);font-size:12px;font-weight:500;padding:3px 8px;border-radius:6px}
+.shift-up{color:#22c55e;background:#22c55e12}
+.shift-dn{color:#ef4444;background:#ef444412}
+.shift-same{color:var(--muted)}
+.sparkline-cell svg{display:block}
+.comp-rank{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--accent)}
+.naaqs-warn{color:#ef4444;font-size:11px;margin-left:4px}
+
+/* ─── CHARTS GRID ─── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2rem}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+.chart-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.chart-sub{font-size:11px;color:var(--muted);margin-bottom:1.25rem;font-family:var(--font-mono)}
+
+/* ─── RANK DRIFT ─── */
+.drift-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:2rem}
+.drift-title{font-family:var(--font-head);font-size:14px;font-weight:700;margin-bottom:.25rem}
+.drift-sub{font-size:11px;color:var(--muted);margin-bottom:1.25rem;font-family:var(--font-mono)}
+.drift-grid{display:flex;flex-direction:column;gap:10px}
+.drift-row{display:grid;grid-template-columns:140px 1fr 60px;align-items:center;gap:12px}
+.drift-city{font-size:12px;font-weight:500;color:var(--text)}
+.drift-bar-wrap{position:relative;height:24px}
+.drift-nc-bar{position:absolute;top:2px;height:10px;border-radius:3px;background:#3b82f640;border:1px solid #3b82f660;transition:width 1s ease}
+.drift-comp-bar{position:absolute;bottom:2px;height:10px;border-radius:3px;background:var(--accent);opacity:.7;transition:width 1s ease}
+.drift-arrow{font-family:var(--font-mono);font-size:11px;text-align:right}
+
+/* ─── FOOTER ─── */
+footer{border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted);position:relative;z-index:5}
+footer a{color:var(--accent);text-decoration:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-box">NC</div>
+      <div>
+        <div class="brand">Neural<span>City</span></div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px">ranking.neuralcity.in</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="live-badge"><span class="live-dot"></span>CPCB 2022–23 Data</div>
+    </div>
+  </div>
+  <div style="max-width:1100px;margin:1.5rem auto 0;padding:0 2rem">
+    <div class="header-title">Air Quality <em>Intelligence</em><br>Layer for City Rankings</div>
+    <div class="header-sub">Integrating CPCB annual AQI data with Neural City's street-level observations to produce a pollution-adjusted composite rank — giving citizens and municipal officers a truer picture of urban liveability.</div>
+    <div class="source-pill">Dataset: <a href="https://cpcb.nic.in/national-ambient-air-quality-status/" target="_blank">CPCB National Ambient Air Quality Status 2022–23</a> &nbsp;·&nbsp; data.gov.in</div>
+  </div>
+</header>
+
+<main>
+  <div class="stats" id="statsRow"></div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <input type="text" id="searchBox" placeholder="Search city or state…" oninput="renderTable()">
+    </div>
+    <span class="ctrl-label">Sort by:</span>
+    <button class="ctrl-btn active" onclick="setSort('compositeRank',this)">Composite rank</button>
+    <button class="ctrl-btn" onclick="setSort('aqi',this)">AQI</button>
+    <button class="ctrl-btn" onclick="setSort('ncRank',this)">NC rank</button>
+    <button class="ctrl-btn" onclick="setSort('pm25',this)">PM2.5</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSort('compositeRank',null,'composite')">Composite #</th>
+            <th>City</th>
+            <th onclick="setSort('ncRank',null,'nc')">NC Rank</th>
+            <th onclick="setSort('aqi',null,'aqi')">Annual AQI</th>
+            <th>Category</th>
+            <th onclick="setSort('pm25',null,'pm25')">PM2.5 µg/m³</th>
+            <th>Monthly trend</th>
+            <th>Season swing</th>
+            <th>Rank shift</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="drift-card">
+    <div class="drift-title">Rank Drift: Neural City → Composite</div>
+    <div class="drift-sub">Blue bar = Neural City rank &nbsp;·&nbsp; Teal bar = Composite rank (AQI-adjusted) &nbsp;·&nbsp; Wider = higher rank</div>
+    <div class="drift-grid" id="driftGrid"></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Annual AQI by city</div>
+      <div class="chart-sub">CPCB 2022–23 annual mean &nbsp;·&nbsp; NAAQS standard = 60 AQI</div>
+      <div style="position:relative;height:320px">
+        <canvas id="aqiChart" role="img" aria-label="Bar chart of annual AQI for 20 Indian cities">AQI data for 20 cities from 65 (Coimbatore) to 175 (Kanpur).</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Winter vs summer AQI</div>
+      <div class="chart-sub">Seasonal swing reveals weather-driven pollution spikes</div>
+      <div style="position:relative;height:320px">
+        <canvas id="seasonChart" role="img" aria-label="Grouped bar chart comparing winter and summer AQI for top 10 cities by seasonal swing">Seasonal comparison of winter and summer AQI across cities.</canvas>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Prototype for Neural City Product Engineering Intern Assignment &nbsp;·&nbsp;
+  Data: <a href="https://cpcb.nic.in" target="_blank">CPCB</a> &amp; <a href="https://data.gov.in" target="_blank">data.gov.in</a> &nbsp;·&nbsp;
+  Composite rank = 70% Neural City + 30% AQI &nbsp;·&nbsp;
+  Built with ♥ for urban intelligence
+</footer>
+
+<script>
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const CITIES = [
+  {city:"Bengaluru",   state:"Karnataka",      ncRank:3,  compositeRank:1,  aqi:78,  aqiRank:4,  category:"Satisfactory", pm25:32,  pm10:89,  no2:30, winterAqi:87.0, summerAqi:71.8, swing:15.2, naaqs:false, monthly:[88,85,80,72,70,65,68,66,75,82,88,90]},
+  {city:"Chennai",     state:"Tamil Nadu",      ncRank:5,  compositeRank:2,  aqi:72,  aqiRank:3,  category:"Satisfactory", pm25:28,  pm10:78,  no2:25, winterAqi:80.0, summerAqi:65.0, swing:15.0, naaqs:false, monthly:[80,76,72,65,62,58,60,58,68,75,80,82]},
+  {city:"Mumbai",      state:"Maharashtra",     ncRank:2,  compositeRank:2,  aqi:99,  aqiRank:10, category:"Satisfactory", pm25:46,  pm10:118, no2:42, winterAqi:112.0,summerAqi:88.5, swing:23.5, naaqs:true,  monthly:[110,105,98,90,88,78,82,80,95,105,115,118]},
+  {city:"Hyderabad",   state:"Telangana",       ncRank:4,  compositeRank:4,  aqi:85,  aqiRank:6,  category:"Satisfactory", pm25:38,  pm10:95,  no2:32, winterAqi:95.0, summerAqi:79.8, swing:15.3, naaqs:false, monthly:[95,90,86,78,76,70,72,71,80,88,92,96]},
+  {city:"Delhi",       state:"Delhi",           ncRank:1,  compositeRank:5,  aqi:168, aqiRank:19, category:"Moderate",     pm25:97,  pm10:228, no2:71, winterAqi:230.0,summerAqi:124.5,swing:105.5,naaqs:true,  monthly:[245,220,175,130,108,85,90,95,140,190,230,255]},
+  {city:"Pune",        state:"Maharashtra",     ncRank:7,  compositeRank:5,  aqi:82,  aqiRank:5,  category:"Satisfactory", pm25:35,  pm10:88,  no2:30, winterAqi:92.0, summerAqi:77.0, swing:15.0, naaqs:false, monthly:[92,88,84,75,72,68,70,69,78,85,90,92]},
+  {city:"Kolkata",     state:"West Bengal",     ncRank:6,  compositeRank:7,  aqi:142, aqiRank:15, category:"Moderate",     pm25:76,  pm10:188, no2:55, winterAqi:192.0,summerAqi:116.3,swing:75.8, naaqs:true,  monthly:[195,180,148,110,95,80,82,85,120,158,185,198]},
+  {city:"Ahmedabad",   state:"Gujarat",         ncRank:8,  compositeRank:8,  aqi:112, aqiRank:13, category:"Moderate",     pm25:58,  pm10:148, no2:45, winterAqi:132.5,summerAqi:100.3,swing:32.2, naaqs:true,  monthly:[135,128,115,98,92,82,85,84,98,115,128,138]},
+  {city:"Surat",       state:"Gujarat",         ncRank:10, compositeRank:9,  aqi:105, aqiRank:11, category:"Moderate",     pm25:52,  pm10:135, no2:42, winterAqi:123.5,summerAqi:94.8, swing:28.7, naaqs:true,  monthly:[125,118,108,92,88,78,80,79,92,108,120,128]},
+  {city:"Jaipur",      state:"Rajasthan",       ncRank:9,  compositeRank:10, aqi:125, aqiRank:14, category:"Moderate",     pm25:65,  pm10:168, no2:50, winterAqi:154.0,summerAqi:109.0,swing:45.0, naaqs:true,  monthly:[158,148,128,105,98,85,88,86,108,128,148,162]},
+  {city:"Nagpur",      state:"Maharashtra",     ncRank:13, compositeRank:11, aqi:90,  aqiRank:8,  category:"Satisfactory", pm25:40,  pm10:98,  no2:34, winterAqi:100.3,summerAqi:82.0, swing:18.2, naaqs:false, monthly:[102,98,92,82,78,72,74,73,82,92,98,105]},
+  {city:"Visakhapatnam",state:"Andhra Pradesh", ncRank:16, compositeRank:12, aqi:68,  aqiRank:2,  category:"Satisfactory", pm25:26,  pm10:72,  no2:22, winterAqi:76.3, summerAqi:62.5, swing:13.7, naaqs:false, monthly:[75,72,68,62,58,55,56,55,62,70,75,78]},
+  {city:"Indore",      state:"Madhya Pradesh",  ncRank:14, compositeRank:13, aqi:98,  aqiRank:9,  category:"Satisfactory", pm25:48,  pm10:118, no2:40, winterAqi:116.0,summerAqi:91.0, swing:25.0, naaqs:true,  monthly:[118,112,102,88,84,76,78,77,88,100,112,120]},
+  {city:"Lucknow",     state:"Uttar Pradesh",   ncRank:11, compositeRank:13, aqi:155, aqiRank:16, category:"Moderate",     pm25:88,  pm10:205, no2:62, winterAqi:205.0,summerAqi:128.3,swing:76.7, naaqs:true,  monthly:[210,195,162,120,108,88,90,92,128,165,195,215]},
+  {city:"Bhopal",      state:"Madhya Pradesh",  ncRank:15, compositeRank:15, aqi:88,  aqiRank:7,  category:"Satisfactory", pm25:38,  pm10:96,  no2:34, winterAqi:99.5, summerAqi:80.5, swing:19.0, naaqs:false, monthly:[100,96,90,80,76,70,72,71,80,90,98,104]},
+  {city:"Coimbatore",  state:"Tamil Nadu",      ncRank:20, compositeRank:16, aqi:65,  aqiRank:1,  category:"Satisfactory", pm25:24,  pm10:68,  no2:20, winterAqi:72.0, summerAqi:60.0, swing:12.0, naaqs:false, monthly:[72,70,66,60,56,52,54,52,58,66,70,74]},
+  {city:"Kanpur",      state:"Uttar Pradesh",   ncRank:12, compositeRank:17, aqi:175, aqiRank:20, category:"Moderate",     pm25:105, pm10:238, no2:72, winterAqi:244.5,summerAqi:149.0,swing:95.5, naaqs:true,  monthly:[252,235,185,138,120,95,98,99,148,188,225,255]},
+  {city:"Vadodara",    state:"Gujarat",         ncRank:18, compositeRank:18, aqi:108, aqiRank:12, category:"Moderate",     pm25:54,  pm10:138, no2:44, winterAqi:127.3,summerAqi:98.5, swing:28.8, naaqs:true,  monthly:[128,122,112,95,90,80,82,81,95,110,122,132]},
+  {city:"Patna",       state:"Bihar",           ncRank:17, compositeRank:19, aqi:165, aqiRank:18, category:"Moderate",     pm25:92,  pm10:218, no2:68, winterAqi:215.0,summerAqi:130.5,swing:84.5, naaqs:true,  monthly:[228,212,172,128,112,90,92,94,135,172,208,232]},
+  {city:"Agra",        state:"Uttar Pradesh",   ncRank:19, compositeRank:20, aqi:158, aqiRank:17, category:"Moderate",     pm25:90,  pm10:210, no2:65, winterAqi:207.8,summerAqi:129.3,swing:78.6, naaqs:true,  monthly:[215,198,165,122,110,88,90,91,130,168,198,218]},
+];
+
+function aqiBadge(cat){
+  const map={Good:"badge-good",Satisfactory:"badge-sat",Moderate:"badge-mod",Poor:"badge-poor",Severe:"badge-severe"};
+  return `<span class="badge ${map[cat]||'badge-mod'}">${cat}</span>`;
+}
+function aqiColor(aqi){
+  if(aqi<=50)return"#22c55e";if(aqi<=100)return"#84cc16";if(aqi<=200)return"#f59e0b";if(aqi<=300)return"#ef4444";return"#a855f7";
+}
+function sparkSVG(monthly){
+  const max=Math.max(...monthly),min=Math.min(...monthly),w=88,h=26;
+  const x=i=>Math.round(i*(w-4)/11+2);
+  const y=v=>Math.round(h-2-(v-min)/(max-min+1)*(h-4));
+  let pts=monthly.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+  const col=aqiColor(monthly.reduce((a,b)=>a+b,0)/12);
+  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+let sortKey="compositeRank",sortDir=1;
+function setSort(key,btn,thKey){
+  if(sortKey===key)sortDir*=-1; else{sortKey=key;sortDir=1;}
+  if(btn){document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  document.querySelectorAll('th').forEach(th=>th.classList.remove('sorted'));
+  if(thKey)document.querySelectorAll(`th`).forEach(th=>{if(th.dataset.k===thKey)th.classList.add('sorted');});
+  renderTable();
+}
+
+function renderTable(){
+  const q=(document.getElementById('searchBox').value||'').toLowerCase();
+  let data=CITIES.filter(c=>c.city.toLowerCase().includes(q)||c.state.toLowerCase().includes(q));
+  data.sort((a,b)=>(a[sortKey]-b[sortKey])*sortDir);
+  const tb=document.getElementById('tableBody');
+  tb.innerHTML=data.map((c,i)=>{
+    const shift=c.ncRank-c.compositeRank;
+    const shiftHtml=shift>0?`<span class="shift shift-up">▲ ${shift}</span>`:shift<0?`<span class="shift shift-dn">▼ ${Math.abs(shift)}</span>`:`<span class="shift shift-same">—</span>`;
+    const barW=Math.round((c.aqi/200)*90);
+    const pm25Warn=c.naaqs?`<span class="naaqs-warn" title="Exceeds NAAQS standard">⚠</span>`:'';
+    return`<tr style="animation-delay:${i*0.03}s">
+      <td><span class="comp-rank">#${c.compositeRank}</span></td>
+      <td><div class="city-name">${c.city}</div><div class="city-state">${c.state}</div></td>
+      <td><span class="rank-num">${c.ncRank}</span></td>
+      <td>
+        <span class="aqi-val" style="color:${aqiColor(c.aqi)}">${c.aqi}</span>
+        <span class="aqi-bar-wrap"><span class="aqi-bar-fill" style="width:${barW}%;background:${aqiColor(c.aqi)}"></span></span>
+      </td>
+      <td>${aqiBadge(c.category)}</td>
+      <td><span style="font-family:var(--font-mono)">${c.pm25}</span>${pm25Warn}</td>
+      <td>${sparkSVG(c.monthly)}</td>
+      <td><span style="font-family:var(--font-mono);font-size:12px;color:${c.swing>50?'#ef4444':c.swing>25?'#f59e0b':'#84cc16'}">±${c.swing}</span></td>
+      <td>${shiftHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStats(){
+  const avg=Math.round(CITIES.reduce((s,c)=>s+c.aqi,0)/CITIES.length);
+  const exceed=CITIES.filter(c=>c.naaqs).length;
+  const cleanest=CITIES.reduce((a,b)=>a.aqi<b.aqi?a:b);
+  const worst=CITIES.reduce((a,b)=>a.aqi>b.aqi?a:b);
+  const maxShift=Math.max(...CITIES.map(c=>Math.abs(c.ncRank-c.compositeRank)));
+  document.getElementById('statsRow').innerHTML=[
+    {label:"Cities analysed",val:"20",sub:"Top Indian cities",cls:"c-teal"},
+    {label:"Average annual AQI",val:avg,sub:"Moderate category",cls:"c-amber"},
+    {label:"Exceed NAAQS PM2.5",val:`${exceed}/20`,sub:"PM2.5 > 40 µg/m³",cls:"c-red"},
+    {label:"Max rank shift",val:`±${maxShift}`,sub:`${cleanest.city} best · ${worst.city} worst`,cls:"c-blue"},
+  ].map(s=>`<div class="stat-card ${s.cls}" style="animation-delay:${Math.random()*0.2}s">
+    <div class="stat-label">${s.label}</div>
+    <div class="stat-val">${s.val}</div>
+    <div class="stat-sub">${s.sub}</div>
+  </div>`).join('');
+}
+
+function renderDrift(){
+  const sorted=[...CITIES].sort((a,b)=>a.compositeRank-b.compositeRank);
+  const n=20;
+  document.getElementById('driftGrid').innerHTML=sorted.map(c=>{
+    const ncW=Math.round((1-c.ncRank/n)*100);
+    const compW=Math.round((1-(c.compositeRank-1)/n)*100);
+    const shift=c.ncRank-c.compositeRank;
+    const arrow=shift>0?`<span style="color:#22c55e">▲${shift}</span>`:shift<0?`<span style="color:#ef4444">▼${Math.abs(shift)}</span>`:`<span style="color:var(--muted)">—</span>`;
+    return`<div class="drift-row">
+      <div class="drift-city">${c.city}</div>
+      <div class="drift-bar-wrap">
+        <div class="drift-nc-bar" style="width:${ncW}%"></div>
+        <div class="drift-comp-bar" style="width:${compW}%"></div>
+      </div>
+      <div class="drift-arrow">${arrow}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCharts(){
+  const sorted=[...CITIES].sort((a,b)=>a.aqi-b.aqi);
+  const labels=sorted.map(c=>c.city);
+  const aqis=sorted.map(c=>c.aqi);
+  const colors=sorted.map(c=>aqiColor(c.aqi));
+
+  new Chart(document.getElementById('aqiChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Annual AQI',data:aqis,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1,borderRadius:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`AQI: ${ctx.parsed.y} — ${sorted[ctx.dataIndex].category}`}}},
+      scales:{
+        x:{ticks:{color:'#6b7a99',font:{family:'DM Mono',size:10},maxRotation:45},grid:{color:'#ffffff08'}},
+        y:{ticks:{color:'#6b7a99',font:{family:'DM Mono',size:10}},grid:{color:'#ffffff08'},
+           annotations:{line1:{type:'line',yMin:60,yMax:60,borderColor:'#ef4444',borderWidth:1,borderDash:[4,4]}}}
+      }
+    }
+  });
+
+  const swing=[...CITIES].sort((a,b)=>b.swing-a.swing).slice(0,10);
+  new Chart(document.getElementById('seasonChart'),{
+    type:'bar',
+    data:{
+      labels:swing.map(c=>c.city),
+      datasets:[
+        {label:'Winter AQI (Oct–Jan)',data:swing.map(c=>c.winterAqi),backgroundColor:'#3b82f666',borderColor:'#3b82f6',borderWidth:1,borderRadius:4},
+        {label:'Summer AQI (Mar–Jun)',data:swing.map(c=>c.summerAqi),backgroundColor:'#00d4a866',borderColor:'#00d4a8',borderWidth:1,borderRadius:4},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#6b7a99',font:{family:'DM Mono',size:10},boxWidth:10,boxHeight:10,padding:12}}},
+      scales:{
+        x:{ticks:{color:'#6b7a99',font:{family:'DM Mono',size:10},maxRotation:40},grid:{color:'#ffffff08'}},
+        y:{ticks:{color:'#6b7a99',font:{family:'DM Mono',size:10}},grid:{color:'#ffffff08'}}
+      }
+    }
+  });
+}
+
+renderStats();
+renderTable();
+renderDrift();
+window.addEventListener('load',renderCharts);
+</script>
+</body>
+</html>
