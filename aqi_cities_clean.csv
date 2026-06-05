@@ -1,0 +1,21 @@
+city,state,neural_city_rank,composite_rank,annual_aqi,aqi_rank,aqi_category,aqi_color,pm25_ugm3,pm10_ugm3,no2_ugm3,winter_aqi,summer_aqi,seasonal_swing,exceeds_naaqs_pm25,aqi_jan,aqi_feb,aqi_mar,aqi_apr,aqi_may,aqi_jun,aqi_jul,aqi_aug,aqi_sep,aqi_oct,aqi_nov,aqi_dec
+Bengaluru,Karnataka,3,1,78,4,Satisfactory,#92d050,32.0,89.0,30.0,87.0,71.8,15.2,False,88,85,80,72,70,65,68,66,75,82,88,90
+Mumbai,Maharashtra,2,2,99,10,Satisfactory,#92d050,46.0,118.0,42.0,112.0,88.5,23.5,True,110,105,98,90,88,78,82,80,95,105,115,118
+Chennai,Tamil Nadu,5,2,72,3,Satisfactory,#92d050,28.0,78.0,25.0,79.2,64.2,15.0,False,80,76,72,65,62,58,60,58,68,75,80,82
+Hyderabad,Telangana,4,4,85,6,Satisfactory,#92d050,38.0,95.0,32.0,92.8,77.5,15.3,False,95,90,86,78,76,70,72,71,80,88,92,96
+Delhi,Delhi,1,5,168,19,Moderate,#ffff00,97.0,228.0,71.0,230.0,124.5,105.5,True,245,220,175,130,108,85,90,95,140,190,230,255
+Pune,Maharashtra,7,5,82,5,Satisfactory,#92d050,35.0,88.0,30.0,89.8,74.8,15.0,False,92,88,84,75,72,68,70,69,78,85,90,92
+Kolkata,West Bengal,6,7,142,15,Moderate,#ffff00,76.0,188.0,55.0,184.0,108.2,75.8,True,195,180,148,110,95,80,82,85,120,158,185,198
+Ahmedabad,Gujarat,8,8,112,13,Moderate,#ffff00,58.0,148.0,45.0,129.0,96.8,32.2,True,135,128,115,98,92,82,85,84,98,115,128,138
+Surat,Gujarat,10,9,105,11,Moderate,#ffff00,52.0,135.0,42.0,120.2,91.5,28.7,True,125,118,108,92,88,78,80,79,92,108,120,128
+Jaipur,Rajasthan,9,10,125,14,Moderate,#ffff00,65.0,168.0,50.0,149.0,104.0,45.0,True,158,148,128,105,98,85,88,86,108,128,148,162
+Nagpur,Maharashtra,13,11,90,8,Satisfactory,#92d050,40.0,98.0,34.0,99.2,81.0,18.2,False,102,98,92,82,78,72,74,73,82,92,98,105
+Visakhapatnam,Andhra Pradesh,16,12,68,2,Satisfactory,#92d050,26.0,72.0,22.0,74.5,60.8,13.7,False,75,72,68,62,58,55,56,55,62,70,75,78
+Indore,Madhya Pradesh,14,13,98,9,Satisfactory,#92d050,48.0,118.0,40.0,112.5,87.5,25.0,True,118,112,102,88,84,76,78,77,88,100,112,120
+Lucknow,Uttar Pradesh,11,13,155,16,Moderate,#ffff00,88.0,205.0,62.0,196.2,119.5,76.7,True,210,195,162,120,108,88,90,92,128,165,195,215
+Bhopal,Madhya Pradesh,15,15,88,7,Satisfactory,#92d050,38.0,96.0,34.0,98.0,79.0,19.0,False,100,96,90,80,76,70,72,71,80,90,98,104
+Coimbatore,Tamil Nadu,20,16,65,1,Satisfactory,#92d050,24.0,68.0,20.0,70.5,58.5,12.0,False,72,70,66,60,56,52,54,52,58,66,70,74
+Kanpur,Uttar Pradesh,12,17,175,20,Moderate,#ffff00,105.0,238.0,72.0,230.0,134.5,95.5,True,252,235,185,138,120,95,98,99,148,188,225,255
+Vadodara,Gujarat,18,18,108,12,Moderate,#ffff00,54.0,138.0,44.0,123.0,94.2,28.8,True,128,122,112,95,90,80,82,81,95,110,122,132
+Patna,Bihar,17,19,165,18,Moderate,#ffff00,92.0,218.0,68.0,210.0,125.5,84.5,True,228,212,172,128,112,90,92,94,135,172,208,232
+Agra,Uttar Pradesh,19,20,158,17,Moderate,#ffff00,90.0,210.0,65.0,199.8,121.2,78.6,True,215,198,165,122,110,88,90,91,130,168,198,218
